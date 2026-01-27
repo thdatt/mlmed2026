@@ -1,0 +1,141 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{float}
+\raggedbottom
+\setlength{\textfloatsep}{8pt}
+\setlength{\floatsep}{6pt}
+\setlength{\intextsep}{6pt}
+\title{Practical Work 2 -- Measurement of Fetal Head Circumference}
+
+\author{Ngo Thanh Dat -- 23BI14090}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+Head circumference (HC) is one of the basic biometric parameters used to assess fetal size.
+Together with biparietal diameter (BPD), abdominal circumference (AC), and femur length (FL),
+HC is commonly used to estimate fetal weight.
+In this practical work, a machine learning approach is applied to estimate fetal head circumference
+from ultrasound images using pixel-based regression.
+
+\section{Dataset Overview}
+
+The dataset contains fetal ultrasound images stored in a training set folder, along with a CSV file providing head circumference (HC) measurements.
+The test set does not include HC values, therefore the training data is split into training and validation subsets for evaluation.
+
+\begin{itemize}
+    \item Training set: ultrasound images with corresponding HC labels
+    \item CSV file: image names and head circumference values (mm)
+\end{itemize}
+
+
+\section{Exploratory Data Analysis}
+
+Before training the regression model, the dataset is briefly explored to understand the head circumference values and the quality of the ultrasound images.
+
+Figure~\ref{fig:hc_dist} shows the distribution of head circumference values in the training set.
+The values span a wide range and are continuous, indicating that the problem should be solved using regression rather than classification.
+Most samples are concentrated around the middle range, which should be considered when interpreting model performance.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{HeadCircum.png}
+    \caption{Distribution of head circumference values in the training set.}
+    \label{fig:hc_dist}
+\end{figure}
+The ultrasound images vary in quality due to noise and differences in acquisition conditions.
+To examine this variation, the standard deviation of pixel intensities is computed for a subset of images.
+As shown in Figure~\ref{fig:pixel_std}, the contrast of the images is not consistent across samples, which makes the prediction task challenging.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{PixelIntensity.png}
+    \caption{Distribution of pixel intensity standard deviation across training images.}
+    \label{fig:pixel_std}
+\end{figure}
+
+Figure~\ref{fig:sample_images} presents several randomly selected ultrasound images with their corresponding head circumference values.
+The fetal head boundaries are often unclear and affected by noise.
+These examples illustrate why a simple pixel-based approach may not capture precise anatomical details, but can still provide useful information for approximate head circumference estimation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Testing.png}
+    \caption{Sample ultrasound images with corresponding head circumference values (mm).}
+    \label{fig:sample_images}
+\end{figure}
+\section{Methodology: Pixel-based Regression}
+
+In this work, fetal head circumference estimation is treated as a regression problem.
+A simple machine learning approach is used, where ultrasound images are represented directly by their pixel values.
+This design keeps the method easy to understand and avoids complex techniques such as segmentation or deep learning.
+
+\subsection{Image Preprocessing}
+
+All ultrasound images are converted to grayscale and resized to a fixed resolution of $64 \times 64$ pixels.
+Pixel values are normalized to the range $[0,1]$ to reduce differences caused by imaging conditions.
+
+\subsection{Feature Representation}
+
+After preprocessing, each image is flattened into a one-dimensional vector of 4096 pixel values.
+Each value represents the intensity of one pixel in the ultrasound image.
+These pixel vectors are used directly as input features for the regression model.
+
+\subsection{Regression Model and Evaluation}
+
+A Random Forest Regressor is used to predict head circumference from the pixel-based features.
+The dataset is split into training and validation sets using an 80/20 ratio.
+Model performance is evaluated using Mean Absolute Error (MAE), which measures the average prediction error in millimeters.
+
+\subsection{Hyperparameter Experiment}
+
+Different Random Forest configurations are tested by varying the number of trees and the maximum tree depth.
+This experiment helps evaluate the stability of the model under different parameter settings.
+
+\section{Results}
+
+Table~\ref{tab:rf_comparison} presents the performance of the Random Forest regressor under different hyperparameter configurations.
+The comparison is based on MAE values obtained from the validation set.
+
+\begin{table}[H]
+    \centering
+    \caption{Random Forest Performance under Different Hyperparameters}
+    \label{tab:rf_comparison}
+    \begin{tabular}{ccc}
+        \toprule
+        \textbf{n\_estimators} & \textbf{max\_depth} & \textbf{MAE (mm)} \\
+        \midrule
+        50  & None & 29.05 \\
+        50  & 10   & 29.59 \\
+        50  & 20   & 28.95 \\
+        100 & None & 28.94 \\
+        100 & 10   & 29.12 \\
+        100 & 20   & 28.95 \\
+        200 & None & \textbf{28.75} \\
+        200 & 10   & 28.87 \\
+        200 & 20   & 28.89 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+The results indicate that increasing the number of trees generally leads to a small improvement in prediction accuracy.
+The best performance is obtained with 200 trees and unlimited tree depth, achieving a minimum MAE of 28.75 mm.
+
+Limiting the maximum tree depth does not consistently improve performance and can slightly reduce accuracy.
+Overall, the Random Forest model shows stable behavior across different hyperparameter settings, suggesting that the approach is robust to moderate changes in model complexity.
+
+\section{Conclusion}
+
+This practical work presents a simple machine learning approach for estimating fetal head circumference from ultrasound images.
+By using pixel-based image features and a Random Forest regression model, reasonable prediction performance is achieved without relying on complex techniques such as segmentation or deep learning.
+The results demonstrate that a straightforward and interpretable method can serve as an effective baseline for fetal head circumference estimation.
+
+
+\end{document}
