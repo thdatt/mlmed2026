@@ -1,0 +1,97 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{graphicx}
+\usepackage{float}
+\raggedbottom
+
+\title{Practical Work 3 -- COVID-19 Infection Segmentation from Chest X-ray Images}
+\author{Ngo Thanh Dat -- 23BI14090}
+
+\begin{document}
+\maketitle
+
+% =========================
+\section{Introduction}
+
+COVID-19 infection mainly affects lung tissues and can be observed in chest X-ray images.
+Automatically segmenting infection regions from X-ray images can support medical analysis.
+
+In this practical work, a deep learning approach is used to segment COVID-19 infection regions.
+Because infection appears only inside the lungs, lung masks are first applied to restrict the region of interest.
+A single segmentation model is then trained to detect infection regions inside the lung area.
+
+% =========================
+\section{Dataset Overview}
+
+The COVID-QU-Ex dataset is used in this experiment.
+The dataset provides chest X-ray images together with lung segmentation masks and infection segmentation masks.
+
+The data is divided into training, validation, and test subsets.
+In this work, only images from the COVID-19 category are used for infection segmentation.
+
+% =========================
+\section{Preprocessing}
+
+Before training the segmentation model, lung masks are applied to the X-ray images.
+Each X-ray image is multiplied by its corresponding lung mask so that only lung regions are preserved.
+
+This preprocessing step removes irrelevant background regions and helps the model focus on areas where infection may appear.
+
+% =========================
+\section{Methodology}
+
+\subsection{Dataset Preparation}
+
+Each training sample consists of:
+\begin{itemize}
+    \item Input: masked chest X-ray image containing only lung regions
+    \item Target: infection segmentation mask
+\end{itemize}
+
+All images are converted to grayscale and normalized to the range $[0,1]$.
+Lung masks are used only as a preprocessing step and are not treated as learning targets.
+
+\subsection{Segmentation Model}
+
+A simplified U-Net architecture is used for infection segmentation.
+The model follows an encoder-decoder structure with convolutional layers and ReLU activations.
+The output of the model is a single-channel infection probability map.
+
+Only one segmentation model is trained, as required by the assignment.
+
+\subsection{Loss Function and Training Strategy}
+
+To address the imbalance between infection and background pixels, a combined loss function is used.
+The loss is defined as the average of Binary Cross Entropy loss and Dice loss.
+
+Binary Cross Entropy loss evaluates pixel-wise classification accuracy, while Dice loss encourages better overlap between predicted and ground-truth infection regions.
+This combination improves learning stability for small and sparse infection areas.
+
+The model is trained using the Adam optimizer with a fixed learning rate.
+Training is performed for a small number of epochs to demonstrate correct learning behavior.
+
+% =========================
+\section{Results}
+
+During training, the loss decreases steadily across epochs, indicating successful learning.
+Figure~\ref{fig:result} shows an example of segmentation results.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Prediction.png}
+    \caption{Example segmentation result. From left to right: masked X-ray image, ground-truth infection mask, and predicted infection mask.}
+    \label{fig:result}
+\end{figure}
+
+The predicted infection regions are mainly located inside the lung area and show reasonable agreement with the ground truth.
+
+% =========================
+\section{Conclusion}
+
+This work presents a simple and effective pipeline for COVID-19 infection segmentation from chest X-ray images.
+By using lung masks as a preprocessing step, the segmentation model focuses on relevant anatomical regions and avoids background noise.
+
+The use of a combined Binary Cross Entropy and Dice loss helps handle class imbalance and improves region-level segmentation quality.
+Overall, the proposed approach provides a clear and easy-to-understand baseline for medical image segmentation tasks.
+
+\end{document}
